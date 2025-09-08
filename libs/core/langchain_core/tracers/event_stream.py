@@ -9,13 +9,14 @@ from typing import (
     TYPE_CHECKING,
     Any,
     Optional,
+    TypedDict,
     TypeVar,
     Union,
     cast,
 )
 from uuid import UUID, uuid4
 
-from typing_extensions import NotRequired, TypedDict, override
+from typing_extensions import NotRequired, override
 
 from langchain_core.callbacks.base import AsyncCallbackHandler
 from langchain_core.messages import AIMessageChunk, BaseMessage, BaseMessageChunk
@@ -53,22 +54,20 @@ class RunInfo(TypedDict):
     """Information about a run.
 
     This is used to keep track of the metadata associated with a run.
-
-    Parameters:
-        name: The name of the run.
-        tags: The tags associated with the run.
-        metadata: The metadata associated with the run.
-        run_type: The type of the run.
-        inputs: The inputs to the run.
-        parent_run_id: The ID of the parent run.
     """
 
     name: str
+    """The name of the run."""
     tags: list[str]
+    """The tags associated with the run."""
     metadata: dict[str, Any]
+    """The metadata associated with the run."""
     run_type: str
+    """The type of the run."""
     inputs: NotRequired[Any]
+    """The inputs to the run."""
     parent_run_id: Optional[UUID]
+    """The ID of the parent run."""
 
 
 def _assign_name(name: Optional[str], serialized: Optional[dict[str, Any]]) -> str:
@@ -155,7 +154,11 @@ class _AstreamEventsCallbackHandler(AsyncCallbackHandler, _StreamingCallbackHand
             self.send_stream.send_nowait(event)
 
     def __aiter__(self) -> AsyncIterator[Any]:
-        """Iterate over the receive stream."""
+        """Iterate over the receive stream.
+
+        Returns:
+            An async iterator over the receive stream.
+        """
         return self.receive_stream.__aiter__()
 
     async def tap_output_aiter(
@@ -412,7 +415,6 @@ class _AstreamEventsCallbackHandler(AsyncCallbackHandler, _StreamingCallbackHand
         parent_run_id: Optional[UUID] = None,
         **kwargs: Any,
     ) -> None:
-        """Run on new LLM token. Only available when streaming is enabled."""
         run_info = self.run_map.get(run_id)
         chunk_: Union[GenerationChunk, BaseMessageChunk]
 
@@ -458,7 +460,15 @@ class _AstreamEventsCallbackHandler(AsyncCallbackHandler, _StreamingCallbackHand
     async def on_llm_end(
         self, response: LLMResult, *, run_id: UUID, **kwargs: Any
     ) -> None:
-        """End a trace for an LLM run."""
+        """End a trace for an LLM run.
+
+        Args:
+            response (LLMResult): The response which was generated.
+            run_id (UUID): The run ID. This is the ID of the current run.
+
+        Raises:
+            ValueError: If the run type is not ``'llm'`` or ``'chat_model'``.
+        """
         run_info = self.run_map.pop(run_id)
         inputs_ = run_info["inputs"]
 
@@ -636,7 +646,15 @@ class _AstreamEventsCallbackHandler(AsyncCallbackHandler, _StreamingCallbackHand
 
     @override
     async def on_tool_end(self, output: Any, *, run_id: UUID, **kwargs: Any) -> None:
-        """End a trace for a tool run."""
+        """End a trace for a tool run.
+
+        Args:
+            output: The output of the tool.
+            run_id: The run ID. This is the ID of the current run.
+
+        Raises:
+            AssertionError: If the run ID is a tool call and does not have inputs
+        """
         run_info = self.run_map.pop(run_id)
         if "inputs" not in run_info:
             msg = (
@@ -730,11 +748,11 @@ class _AstreamEventsCallbackHandler(AsyncCallbackHandler, _StreamingCallbackHand
         )
 
     def __deepcopy__(self, memo: dict) -> _AstreamEventsCallbackHandler:
-        """Deepcopy the tracer."""
+        """Return self."""
         return self
 
     def __copy__(self) -> _AstreamEventsCallbackHandler:
-        """Copy the tracer."""
+        """Return self."""
         return self
 
 

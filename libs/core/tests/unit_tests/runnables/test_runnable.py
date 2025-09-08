@@ -314,14 +314,11 @@ def test_schemas(snapshot: SnapshotAssertion) -> None:
                 "\n"
                 "    .. code-block:: python\n"
                 "\n"
-                "        from langchain_core.documents "
-                "import Document\n"
+                "        from langchain_core.documents import Document\n"
                 "\n"
                 "        document = Document(\n"
-                '            page_content="Hello, '
-                'world!",\n'
-                '            metadata={"source": '
-                '"https://example.com"}\n'
+                '            page_content="Hello, world!", '
+                'metadata={"source": "https://example.com"}\n'
                 "        )",
                 "properties": {
                     "id": {
@@ -435,13 +432,7 @@ def test_schemas(snapshot: SnapshotAssertion) -> None:
         "$ref": "#/definitions/RouterInput",
         "definitions": {
             "RouterInput": {
-                "description": "Router input.\n"
-                "\n"
-                "Attributes:\n"
-                "    key: The key to route "
-                "on.\n"
-                "    input: The input to pass "
-                "to the selected Runnable.",
+                "description": "Router input.",
                 "properties": {
                     "input": {"title": "Input"},
                     "key": {"title": "Key", "type": "string"},
@@ -3802,12 +3793,14 @@ class FakeSplitIntoListParser(BaseOutputParser[list[str]]):
         """Return whether or not the class is serializable."""
         return True
 
+    @override
     def get_format_instructions(self) -> str:
         return (
             "Your response should be a list of comma separated values, "
             "eg: `foo, bar, baz`"
         )
 
+    @override
     def parse(self, text: str) -> list[str]:
         """Parse the output of an LLM call."""
         return text.strip().split(", ")

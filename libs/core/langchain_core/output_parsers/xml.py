@@ -136,9 +136,6 @@ class _StreamingParser:
         """Close the parser.
 
         This should be called after all chunks have been parsed.
-
-        Raises:
-            xml.etree.ElementTree.ParseError: If the XML is not well-formed.
         """
         # Ignore ParseError. This will ignore any incomplete XML at the end of the input
         with contextlib.suppress(xml.etree.ElementTree.ParseError):
@@ -154,14 +151,15 @@ class XMLOutputParser(BaseTransformOutputParser):
     Note this may not be perfect depending on the LLM implementation.
 
     For example, with tags=["foo", "bar", "baz"]:
-            1. A well-formatted XML instance:
-                "<foo>\n   <bar>\n      <baz></baz>\n   </bar>\n</foo>"
 
-            2. A badly-formatted XML instance (missing closing tag for 'bar'):
-                "<foo>\n   <bar>\n   </foo>"
+    1. A well-formatted XML instance:
+       "<foo>\n   <bar>\n      <baz></baz>\n   </bar>\n</foo>"
 
-            3. A badly-formatted XML instance (unexpected 'tag' element):
-                "<foo>\n   <tag>\n   </tag>\n</foo>"
+    2. A badly-formatted XML instance (missing closing tag for 'bar'):
+       "<foo>\n   <bar>\n   </foo>"
+
+    3. A badly-formatted XML instance (unexpected 'tag' element):
+       "<foo>\n   <tag>\n   </tag>\n</foo>"
     """
     encoding_matcher: re.Pattern = re.compile(
         r"<([^>]*encoding[^>]*)>\n(.*)", re.MULTILINE | re.DOTALL

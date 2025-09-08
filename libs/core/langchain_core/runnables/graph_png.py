@@ -8,25 +8,14 @@ from langchain_core.runnables.graph import Graph, LabelsDict
 class PngDrawer:
     """Helper class to draw a state graph into a PNG file.
 
-    It requires `graphviz` and `pygraphviz` to be installed.
-    :param fontname: The font to use for the labels
-    :param labels: A dictionary of label overrides. The dictionary
-        should have the following format:
-        {
-            "nodes": {
-                "node1": "CustomLabel1",
-                "node2": "CustomLabel2",
-                "__end__": "End Node"
-            },
-            "edges": {
-                "continue": "ContinueLabel",
-                "end": "EndLabel"
-            }
-        }
-        The keys are the original labels, and the values are the new labels.
-    Usage:
-        drawer = PngDrawer()
-        drawer.draw(state_graph, 'graph.png')
+    It requires ``graphviz`` and ``pygraphviz`` to be installed.
+
+    Example:
+
+        .. code-block:: python
+
+            drawer = PngDrawer()
+            drawer.draw(state_graph, "graph.png")
     """
 
     def __init__(
@@ -85,9 +74,6 @@ class PngDrawer:
         Args:
             viz: The graphviz object.
             node: The node to add.
-
-        Returns:
-            None
         """
         viz.add_node(
             node,
@@ -114,9 +100,6 @@ class PngDrawer:
             target: The target node.
             label: The label for the edge. Defaults to None.
             conditional: Whether the edge is conditional. Defaults to False.
-
-        Returns:
-            None
         """
         viz.add_edge(
             source,
@@ -131,8 +114,16 @@ class PngDrawer:
         """Draw the given state graph into a PNG file.
 
         Requires `graphviz` and `pygraphviz` to be installed.
-        :param graph: The graph to draw
-        :param output_path: The path to save the PNG. If None, PNG bytes are returned.
+
+        Args:
+            graph: The graph to draw
+            output_path: The path to save the PNG. If None, PNG bytes are returned.
+
+        Raises:
+            ImportError: If ``pygraphviz`` is not installed.
+
+        Returns:
+            The PNG bytes if ``output_path`` is None, else None.
         """
         try:
             import pygraphviz as pgv  # type: ignore[import-not-found]
